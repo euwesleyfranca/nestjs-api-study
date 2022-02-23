@@ -1,26 +1,67 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
 import { CreateAddressDto } from './dto/create-address.dto';
 import { UpdateAddressDto } from './dto/update-address.dto';
 
 @Injectable()
 export class AddressesService {
-  create(createAddressDto: CreateAddressDto) {
-    return 'This action adds a new address';
+  constructor(private readonly prismaService: PrismaService) {}
+
+  async create(createAddressDto: CreateAddressDto) {
+    const {
+      street,
+      district,
+      number,
+      complement,
+      city,
+      state,
+      country,
+      zipCode,
+      personId,
+    } = createAddressDto;
+
+    const { id } = await this.prismaService.user.findUnique({
+      where: {
+        id: personId,
+      },
+    });
+
+    if (!id) {
+      throw new BadRequestException('User not found.');
+    }
+
+    return this.prismaService.addresses.create({
+      data: {
+        personId: id,
+        street,
+        number,
+        complement,
+        district,
+        city,
+        state,
+        country,
+        zipCode,
+      },
+    });
   }
 
-  findAll() {
-    return `This action returns all addresses`;
+  async findAll() {
+    return await this.prismaService.addresses.findMany();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} address`;
+  async findOne(id: number) {
+    return await this.prismaService.addresses.findUnique({
+      where: {
+        id,
+      },
+    });
   }
 
-  update(id: number, updateAddressDto: UpdateAddressDto) {
+  async update(id: number, updateAddressDto: UpdateAddressDto) {
     return `This action updates a #${id} address`;
   }
 
-  remove(id: number) {
+  async delete(id: number) {
     return `This action removes a #${id} address`;
   }
 }

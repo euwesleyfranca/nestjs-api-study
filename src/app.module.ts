@@ -21,4 +21,4 @@ import { ServicesModule } from './services/services.module';
   controllers: [AppController],
   providers: [],
 })
-export class AppModule { }
+export class AppModule {}
